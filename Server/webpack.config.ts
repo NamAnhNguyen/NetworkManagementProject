@@ -1,33 +1,40 @@
 const path = require('path');
-const { NODE_ENV } = process.env;
+
+const {
+    NODE_ENV = 'production',
+} = process.env;
 
 const nodeExternals = require('webpack-node-externals');
-
 const WebpackShellPlugin = require('webpack-shell-plugin');
-const webpack = require("webpack");
+
 
 module.exports = {
-    entry: ["webpack/hot/poll?100", "./src/index.ts"],
-    watch: true,
-    target: "node",
-    externals: [
-    ],
+    entry: './src/index.ts',
+    mode: NODE_ENV,
+    target: 'node',
+    output: {
+        path: path.resolve(__dirname, 'build'),
+        filename: 'index.js'
+    },
+    resolve: {
+        extensions: ['.ts', '.js'],
+    },
     module: {
         rules: [
             {
-                test: /.tsx?$/,
-                use: "ts-loader",
-                exclude: /node_modules/
+                test: /\.ts$/,
+                use: [
+                    'ts-loader',
+                ]
             }
         ]
     },
-    mode: "development",
-    resolve: {
-        extensions: [".tsx", ".ts", ".js"]
-    },
-    plugins: [new webpack.HotModuleReplacementPlugin()],
-    output: {
-        path: path.join(__dirname, "dist"),
-        filename: "index.js"
-    }
-};
+    externals: [nodeExternals()],
+    watch: NODE_ENV === 'development',
+    // plugins: [
+    //     new WebpackShellPlugin({
+    //         onBuildEnd: ['yarn run:dev']
+    //     })
+    // ]
+
+}
