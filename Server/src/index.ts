@@ -18,7 +18,9 @@ app.use([
 app.get("/", (req, res) => res.send("Hello from server!"));
 
 app.use("/api/nutrientName/rawQuery", async (req, res, next) => {
-    let { queryString } = req.body
+    console.log(req.query)
+    let { queryString } = req.query
+    console.log(queryString)
     if (!queryString) res.send({
         status: 404,
         data: "WrongParam"
