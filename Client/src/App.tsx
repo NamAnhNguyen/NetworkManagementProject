@@ -8,7 +8,7 @@ const App = () => {
   return (
     <div className="App">
       <header>
-        <Typography variant="h2"> Nutriton Database Access</Typography>
+        <Typography variant="h2">Sale Database Access</Typography>
       </header>
       <br />
       <body>

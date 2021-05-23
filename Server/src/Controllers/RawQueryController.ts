@@ -1,15 +1,10 @@
-import NutrientName from "../Models/NutrientName";
 import pg from "pg"
 import connection from "../Utils/connection";
 
-class NutrientNameController {
-    model = new NutrientName()
+class RawQueryController {
     client = new pg.Client(
         connection
     )
-    async index() {
-        return this.model.select();
-    }
 
     async rawQuery(query: string) {
         console.log(query)
@@ -27,4 +22,4 @@ class NutrientNameController {
     }
 }
 
-export default NutrientNameController
+export default RawQueryController

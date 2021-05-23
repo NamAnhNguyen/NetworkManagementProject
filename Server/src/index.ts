@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import NutrientNameController from "./Controllers/NutrientNameController";
+import RawQueryController from "./Controllers/RawQueryController";
 
 const app = express();
 
@@ -17,7 +17,7 @@ app.use([
 
 app.get("/", (req, res) => res.send("Hello from server!"));
 
-app.use("/api/nutrientName/rawQuery", async (req, res, next) => {
+app.use("/api/rawQuery", async (req, res, next) => {
     console.log(req.query)
     let { queryString } = req.query
     console.log(queryString)
@@ -26,7 +26,7 @@ app.use("/api/nutrientName/rawQuery", async (req, res, next) => {
         data: "WrongParam"
     })
     queryString = queryString ? queryString.toString() : '';
-    let ctrl = new NutrientNameController()
+    let ctrl = new RawQueryController()
     try {
         let result = await ctrl.rawQuery(queryString);
         res.send({
