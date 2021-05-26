@@ -1,5 +1,5 @@
 import { Button, FormControl, FormLabel, Grid, TextField, makeStyles, createStyles, Theme, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select } from "@material-ui/core"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -20,10 +20,19 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
-const FilterComponent = (props: { table: string }) => {
+const FilterComponent = (props: {
+    table: string,
+    callback: (
+        queryComponent: {
+            field: string,
+            operator: string,
+            value: string | number
+        }
+    ) => any
+}) => {
 
     const classes = useStyles();
-    const { table } = props
+    const { table, callback } = props
 
     const [variableType, setVariableType] = useState('number')
     const [filterValue, setFilterValue] = useState<number | string>('')
@@ -33,7 +42,7 @@ const FilterComponent = (props: { table: string }) => {
 
     const variableTypes = ['number', 'string']
     const numberOperators = ['=', '!=', '<', '<=', '>', '>=']
-    const stringOperators = ['=', 'contains', 'does not contain', 'begins with', 'do not begin with', 'ends with', 'do not end with']
+    const stringOperators = ['=', 'contains', 'does not contain', 'begins with', 'does not begin with', 'ends with', 'does not end with']
 
     const orderFields: { name: string, type: 'number' | 'string' }[] = [
         { name: 'ord_num', type: 'number' },
@@ -67,6 +76,29 @@ const FilterComponent = (props: { table: string }) => {
         { name: 'country', type: 'string' },
     ]
 
+    useEffect(() => {
+        callback({ field: field, operator: operator, value: filterValue })
+    }, [field, operator, filterValue])
+
+    useEffect(() => {
+        switch (table) {
+            case 'orders':
+                setField(orderFields[0].name)
+                setVariableType(orderFields[0].type)
+                break;
+            case 'customers':
+                setField(customerFields[0].name)
+                setVariableType(customerFields[0].type)
+                break;
+            case 'agents':
+                setField(agentFields[0].name)
+                setVariableType(agentFields[0].type)
+                break;
+            default:
+                break
+        }
+    }, [table])
+
     const renderFieldSelect = () => {
         switch (table) {
             case 'orders':
@@ -74,10 +106,15 @@ const FilterComponent = (props: { table: string }) => {
                     native
                     value={field}
                     fullWidth
-                    onChange={(e) => { setField(`${e.target.value}`) }}
+                    onChange={(e) => {
+                        let fieldName = `${e.target.value}`;
+                        let fieldType = orderFields.find(f => f.name == fieldName)?.type;
+                        setVariableType(`${fieldType}`);
+                        setField(`${e.target.value}`)
+                    }}
                 >
                     {orderFields.map(field => (
-                        <option value={field.name}>{field.name.toUpperCase()}</option>
+                        <option value={field.name}>{`${field.name.toUpperCase()} (${field.type})`}</option>
                     ))}
                 </Select>
             case 'customers':
@@ -85,10 +122,15 @@ const FilterComponent = (props: { table: string }) => {
                     native
                     value={field}
                     fullWidth
-                    onChange={(e) => { setField(`${e.target.value}`) }}
+                    onChange={(e) => {
+                        let fieldName = `${e.target.value}`;
+                        let fieldType = customerFields.find(f => f.name == fieldName)?.type;
+                        setVariableType(`${fieldType}`);
+                        setField(`${e.target.value}`)
+                    }}
                 >
                     {customerFields.map(field => (
-                        <option value={field.name}>{field.name.toUpperCase()}</option>
+                        <option value={field.name}>{`${field.name.toUpperCase()} (${field.type})`}</option>
                     ))}
                 </Select>
             case 'agents':
@@ -96,10 +138,15 @@ const FilterComponent = (props: { table: string }) => {
                     native
                     value={field}
                     fullWidth
-                    onChange={(e) => { setField(`${e.target.value}`) }}
+                    onChange={(e) => {
+                        let fieldName = `${e.target.value}`;
+                        let fieldType = agentFields.find(f => f.name == fieldName)?.type;
+                        setVariableType(`${fieldType}`);
+                        setField(`${e.target.value}`)
+                    }}
                 >
                     {agentFields.map(field => (
-                        <option value={field.name}>{field.name.toUpperCase()}</option>
+                        <option value={field.name}>{`${field.name.toUpperCase()} (${field.type})`}</option>
                     ))}
                 </Select>
             default:
@@ -153,7 +200,6 @@ const FilterComponent = (props: { table: string }) => {
                     name="filterValue"
                     label='Filter Value'
                     value={filterValue}
-                    type='number'
                     fullWidth
                     onChange={(e) => { setFilterValue(e.target.value) }} />
             default:
@@ -163,7 +209,7 @@ const FilterComponent = (props: { table: string }) => {
 
     return <div className={classes.root}>
         <Grid container spacing={3} >
-            <Grid item xs={2}>
+            {/* <Grid item xs={2}>
                 <Select
                     native
                     value={variableType}
@@ -174,11 +220,11 @@ const FilterComponent = (props: { table: string }) => {
                         <option value={type}>{type.toUpperCase()}</option>
                     ))}
                 </Select>
-            </Grid>
-            <Grid item xs={4}>
+            </Grid> */}
+            <Grid item xs={5}>
                 {renderFieldSelect()}
             </Grid>
-            <Grid item xs={1}>
+            <Grid item xs={2}>
                 {renderOperatorSelect()}
             </Grid>
             <Grid item xs={5}>

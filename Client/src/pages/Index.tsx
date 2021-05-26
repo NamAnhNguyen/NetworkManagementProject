@@ -5,6 +5,8 @@ import AgentTable from "./AgentTable";
 import CustomerTable from "./CustomerTable";
 import OrderTable from "./OrderTable";
 import FilterComponent from "./FilterComponent";
+import { Alert } from '@material-ui/lab';
+
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -15,6 +17,11 @@ const useStyles = makeStyles((theme: Theme) =>
         },
     }),
 );
+interface QueryComponent {
+    field: string,
+    operator: string,
+    value: string | number
+}
 
 const Index = () => {
     const classes = useStyles();
@@ -25,6 +32,12 @@ const Index = () => {
     const [queryResult, setQueryResult] = useState([]);
     const [chosenTable, setChosenTable] = useState('agents')
     const [isSecure, setIsSecure] = useState(false)
+    const [queryComponent, setQueryComponent] = useState<QueryComponent>(
+        { field: "", operator: "=", value: "" }
+    );
+
+    const [showAlert, setShowAlert] = useState(false)
+
 
     const getTheData = async () => {
         let result = await axios.get("http://localhost:4000/api/rawQuery", {
@@ -35,10 +48,41 @@ const Index = () => {
         setQueryResult(result.data.data)
     }
 
-    const onsubmit = async (event: any) => {
-        event.preventDefault();
+    const getChildrenValue = (
+        queryComponent: QueryComponent) => {
+        setQueryComponent(queryComponent)
+        // console.log(queryComponent.field, queryComponent.operator, queryComponent.value)
+    }
+
+    const submitNoSecure = async () => {
         console.log(queryString)
+        if (!queryString) {
+            setShowAlert(true)
+            return
+        }
         await getTheData()
+    }
+
+    const submitSecure = async () => {
+        let { field, operator, value } = queryComponent
+        if (!field || !operator || !value) {
+            setShowAlert(true)
+            return
+        }
+        console.log(queryComponent)
+        setShowAlert(false)
+
+    }
+
+    const onSubmit = async (event: any) => {
+        event.preventDefault();
+        if (!isSecure) {
+            await submitNoSecure()
+        }
+        else {
+            await submitSecure()
+        }
+
     }
 
     const renderTable = () => {
@@ -55,7 +99,7 @@ const Index = () => {
     }
 
     return <div className={classes.root}>
-        <form onSubmit={onsubmit}>
+        <form onSubmit={onSubmit}>
             <Grid container alignItems="flex-start" justify="flex-start" spacing={3} >
                 <Grid item xs={2} >
                     <Typography>Choose your table below</Typography>
@@ -79,7 +123,11 @@ const Index = () => {
                 <Grid item xs={1}>
                     <Switch
                         checked={isSecure}
-                        onChange={(e) => { setIsSecure(e.target.checked) }}
+                        onChange={(e) => {
+                            setIsSecure(e.target.checked)
+                            setQueryString("")
+                            setQueryResult([]);
+                        }}
                         name="checkedB"
                         color="primary"
                     />
@@ -89,7 +137,15 @@ const Index = () => {
                 </Grid>
                 <Grid item xs={10} >
                     {isSecure ?
-                        <FilterComponent table={chosenTable} />
+
+                        <Grid container>
+                            <Grid item xs={10}>
+                                <FilterComponent table={chosenTable} callback={getChildrenValue} />
+                            </Grid>
+                            <Grid item xs={2}>
+                                <Button>Add Filter</Button>
+                            </Grid>
+                        </Grid>
                         :
                         <FormControl fullWidth>
                             <TextField
@@ -102,11 +158,19 @@ const Index = () => {
                         </FormControl>
                     }
                 </Grid>
+                <Grid item xs={12}>
+                    {showAlert ? <Alert variant="outlined" severity="error" onClose={() => {
+                        setShowAlert(false)
+                    }}>
+                        Missing Params
+                    </Alert> : <></>}
+                </Grid>
                 <Grid item xs={12} >
                     <Button fullWidth type="submit">Submit</Button>
                 </Grid>
             </Grid>
         </form>
+
         <br />
         {
             renderTable()

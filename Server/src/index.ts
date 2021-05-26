@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import RawQueryController from "./Controllers/RawQueryController";
+import AgentController from "./Controllers/AgentsController";
+import CustomerController from "./Controllers/CustomersController";
+import OrderController from "./Controllers/OrdersController";
 
 const app = express();
 
@@ -41,22 +44,56 @@ app.use("/api/rawQuery", async (req, res, next) => {
     }
 })
 
-// app.use("/api/nutrientName", async (req, res, next) => {
-//     let ctrl = new NutrientNameController()
-//     try {
-//         let result = await ctrl.index();
-//         res.send({
-//             status: 200,
-//             data: result
-//         })
-//     } catch (error) {
-//         res.send({
-//             status: 500,
-//             data: error
-//         })
-//     }
+app.use("/api/agents", async (req, res, next) => {
+    let ctrl = new AgentController()
+    try {
+        let result = await ctrl.queryExecute(req.body);
+        res.send({
+            status: 200,
+            data: result
+        })
+    } catch (error) {
+        res.send({
+            status: 500,
+            data: error
+        })
+    }
 
-// })
+})
+
+app.use("/api/customers", async (req, res, next) => {
+    let ctrl = new CustomerController()
+    try {
+        let result = await ctrl.queryExecute(req.body);
+        res.send({
+            status: 200,
+            data: result
+        })
+    } catch (error) {
+        res.send({
+            status: 500,
+            data: error
+        })
+    }
+
+})
+
+app.use("/api/orders", async (req, res, next) => {
+    let ctrl = new OrderController()
+    try {
+        let result = await ctrl.queryExecute(req.body);
+        res.send({
+            status: 200,
+            data: result
+        })
+    } catch (error) {
+        res.send({
+            status: 500,
+            data: error
+        })
+    }
+
+})
 
 
 
