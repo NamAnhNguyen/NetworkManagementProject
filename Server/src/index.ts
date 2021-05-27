@@ -46,8 +46,15 @@ app.use("/api/rawQuery", async (req, res, next) => {
 
 app.use("/api/agents", async (req, res, next) => {
     let ctrl = new AgentController()
+    let { queryComponents } = req.body
+    if (!queryComponents) {
+        res.send({
+            status: 500,
+            data: 'Missing params'
+        })
+    }
     try {
-        let result = await ctrl.queryExecute(req.body);
+        let result = await ctrl.queryExecute(queryComponents);
         res.send({
             status: 200,
             data: result
@@ -63,8 +70,15 @@ app.use("/api/agents", async (req, res, next) => {
 
 app.use("/api/customers", async (req, res, next) => {
     let ctrl = new CustomerController()
+    let { queryComponents } = req.body
+    if (!queryComponents) {
+        res.send({
+            status: 500,
+            data: 'Missing params'
+        })
+    }
     try {
-        let result = await ctrl.queryExecute(req.body);
+        let result = await ctrl.queryExecute(queryComponents);
         res.send({
             status: 200,
             data: result
@@ -80,8 +94,15 @@ app.use("/api/customers", async (req, res, next) => {
 
 app.use("/api/orders", async (req, res, next) => {
     let ctrl = new OrderController()
+    let { queryComponents } = req.body
+    if (!queryComponents) {
+        res.send({
+            status: 500,
+            data: 'Missing params'
+        })
+    }
     try {
-        let result = await ctrl.queryExecute(req.body);
+        let result = await ctrl.queryExecute(queryComponents);
         res.send({
             status: 200,
             data: result

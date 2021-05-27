@@ -22,17 +22,18 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const FilterComponent = (props: {
     table: string,
+    index: number,
     callback: (
         queryComponent: {
             field: string,
             operator: string,
             value: string | number
-        }
+        }, key: number
     ) => any
 }) => {
 
     const classes = useStyles();
-    const { table, callback } = props
+    const { table, callback, index } = props
 
     const [variableType, setVariableType] = useState('number')
     const [filterValue, setFilterValue] = useState<number | string>('')
@@ -77,7 +78,7 @@ const FilterComponent = (props: {
     ]
 
     useEffect(() => {
-        callback({ field: field, operator: operator, value: filterValue })
+        callback({ field: field, operator: operator, value: filterValue }, index)
     }, [field, operator, filterValue])
 
     useEffect(() => {

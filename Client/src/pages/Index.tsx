@@ -1,5 +1,5 @@
 import { Button, FormControl, FormLabel, Grid, TextField, makeStyles, createStyles, Theme, Typography, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select } from "@material-ui/core"
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from 'axios'
 import AgentTable from "./AgentTable";
 import CustomerTable from "./CustomerTable";
@@ -32,12 +32,19 @@ const Index = () => {
     const [queryResult, setQueryResult] = useState([]);
     const [chosenTable, setChosenTable] = useState('agents')
     const [isSecure, setIsSecure] = useState(false)
-    const [queryComponent, setQueryComponent] = useState<QueryComponent>(
-        { field: "", operator: "=", value: "" }
+    const [queryComponents, setQueryComponents] = useState<QueryComponent[]>(
+        [{ field: "", operator: "=", value: "" }]
     );
 
     const [showAlert, setShowAlert] = useState(false)
 
+    useEffect(() => {
+        setQueryComponents([{
+            field: "",
+            operator: "=",
+            value: ""
+        }])
+    }, [chosenTable])
 
     const getTheData = async () => {
         let result = await axios.get("http://localhost:4000/api/rawQuery", {
@@ -48,9 +55,12 @@ const Index = () => {
         setQueryResult(result.data.data)
     }
 
-    const getChildrenValue = (
-        queryComponent: QueryComponent) => {
-        setQueryComponent(queryComponent)
+    const getChildrenValue = (queryComponent: QueryComponent, index: number) => {
+        let oldQueryComponents = queryComponents
+        oldQueryComponents[index] = queryComponent;
+        setQueryComponents(
+            [...oldQueryComponents]
+        )
         // console.log(queryComponent.field, queryComponent.operator, queryComponent.value)
     }
 
@@ -64,13 +74,24 @@ const Index = () => {
     }
 
     const submitSecure = async () => {
-        let { field, operator, value } = queryComponent
-        if (!field || !operator || !value) {
-            setShowAlert(true)
+
+        queryComponents.map(queryComponent => {
+            let { field, operator, value } = queryComponent
+            if (!field || !operator || !value) {
+                setShowAlert(true)
+            }
+        })
+
+        if (showAlert) {
             return
         }
-        console.log(queryComponent)
+        console.log(queryComponents)
         setShowAlert(false)
+
+        let result = await axios.post(`http://localhost:4000/api/${chosenTable}`, {
+            queryComponents
+        })
+        setQueryResult(result.data.data)
 
     }
 
@@ -137,15 +158,28 @@ const Index = () => {
                 </Grid>
                 <Grid item xs={10} >
                     {isSecure ?
+                        <>
+                            {queryComponents.map(
+                                (queryComponent, index) =>
+                                    <Grid container spacing={3}>
+                                        <Grid item xs={10}>
+                                            <FilterComponent table={chosenTable} index={index} callback={getChildrenValue} />
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                            <Button onClick={() => {
+                                                let oldQueryComponents = queryComponents
+                                                oldQueryComponents.push({
+                                                    field: "",
+                                                    operator: "=",
+                                                    value: ""
+                                                })
+                                                setQueryComponents([...oldQueryComponents])
+                                            }}>Add Filter</Button>
+                                        </Grid>
+                                    </Grid>
+                            )}
 
-                        <Grid container>
-                            <Grid item xs={10}>
-                                <FilterComponent table={chosenTable} callback={getChildrenValue} />
-                            </Grid>
-                            <Grid item xs={2}>
-                                <Button>Add Filter</Button>
-                            </Grid>
-                        </Grid>
+                        </>
                         :
                         <FormControl fullWidth>
                             <TextField
